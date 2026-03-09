@@ -3,6 +3,7 @@ package com.skillloader;
 import com.skillloader.api.SkillLoader;
 import com.skillloader.model.Skill;
 import com.skillloader.model.SkillContent;
+import com.skillloader.model.SkillMetadata;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -163,7 +164,7 @@ class SkillLoaderIntegrationTest {
         
         List<Skill> skills = loader.discover();
         
-        // 应该能发现 resources 中的 skills
+        // 应该能发现 resources 中的 skills (pdf, weather, chart)
         assertThat(skills).isNotEmpty();
         
         // 尝试加载一个

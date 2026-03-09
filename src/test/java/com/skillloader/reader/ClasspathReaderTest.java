@@ -61,7 +61,7 @@ class ClasspathReaderTest {
     void shouldReadExistingResource() throws Exception {
         // 使用测试资源目录中的实际文件
         ClasspathReader reader = createReader("skills");
-        Path resourcePath = Path.of("skills/python-quality/SKILL.md");
+        Path resourcePath = Path.of("skills/pdf/SKILL.md");
         
         // 检查是否允许
         assertThat(reader.isAllowed(resourcePath)).isTrue();
@@ -104,7 +104,7 @@ class ClasspathReaderTest {
     @Test
     void shouldOpenStreamForAllowedResource() throws Exception {
         ClasspathReader reader = createReader("skills");
-        Path resourcePath = Path.of("skills/python-quality/SKILL.md");
+        Path resourcePath = Path.of("skills/pdf/SKILL.md");
         
         // 验证资源存在且可读
         if (reader.exists(resourcePath)) {
