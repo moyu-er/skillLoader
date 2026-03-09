@@ -20,21 +20,25 @@ jobs:
         distribution: 'temurin'
         cache: maven
     
+    - name: Verify Maven version
+      run: mvn -version
+    
     - name: Compile with Maven
-      run: mvn clean compile
+      run: mvn clean compile -B
     
     - name: Run tests
-      run: mvn test
+      run: mvn test -B
     
     - name: Generate coverage report
-      run: mvn jacoco:report
+      run: mvn jacoco:report -B
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
-        file: target/site/jacoco/jacoco.xml
+        files: target/site/jacoco/jacoco.xml
         fail_ci_if_error: false
         verbose: true
+      if: always()
 
   checkstyle:
     runs-on: ubuntu-latest
@@ -50,5 +54,5 @@ jobs:
         cache: maven
     
     - name: Check code style
-      run: mvn checkstyle:check
+      run: mvn checkstyle:check -B
       continue-on-error: true
