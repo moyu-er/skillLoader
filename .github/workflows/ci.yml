@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: Compile with Maven
+      run: mvn clean compile
+    
+    - name: Run tests
+      run: mvn test
+    
+    - name: Generate coverage report
+      run: mvn jacoco:report
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: target/site/jacoco/jacoco.xml
+        fail_ci_if_error: false
+        verbose: true
+
+  checkstyle:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: Check code style
+      run: mvn checkstyle:check
+      continue-on-error: true

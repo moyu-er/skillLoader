@@ -10,11 +10,23 @@
 
 见 [DESIGN.md](DESIGN.md)
 
+## 项目规范
+
+见 `src/test/resources/skills/skillloader-project-guide/SKILL.md`
+
+## CI/CD
+
+- GitHub Actions: `.github/workflows/ci.yml`
+- 代码风格检查: `checkstyle.xml`
+
 ## 当前进度
 
 ### ✅ 已完成
 
 - [x] 最终设计方案 (DESIGN.md)
+- [x] 项目开发规范 (skillloader-project-guide)
+- [x] CI/CD 配置 (GitHub Actions)
+- [x] Maven 配置 (测试覆盖率、Checkstyle)
 - [x] Phase 1: 项目骨架 + 异常体系 + 核心模型
 - [x] 示例 skills 准备
 - [x] GitHub 仓库初始化
@@ -37,18 +49,21 @@
 
 ```
 skillLoader/
-├── DESIGN.md                      # 设计方案
-├── PROGRESS.md                    # 本文件
-├── pom.xml                        # Maven 配置
+├── .github/workflows/ci.yml         # CI/CD 配置
+├── checkstyle.xml                   # 代码风格配置
+├── DESIGN.md                        # 设计方案
+├── PROGRESS.md                      # 本文件
+├── pom.xml                          # Maven 配置
 ├── src/
 │   ├── main/java/com/skillloader/
-│   │   ├── api/exceptions/       # 异常体系
-│   │   └── model/                # 核心模型
-│   └── test/resources/skills/    # 示例 skills
+│   │   ├── api/exceptions/         # 异常体系
+│   │   └── model/                  # 核心模型
+│   └── test/resources/skills/      # 示例 skills
 │       ├── python-quality/
 │       ├── eslint-config-generator/
 │       ├── typescript-config-generator/
-│       └── skill-loader-usage/
+│       ├── skill-loader-usage/
+│       └── skillloader-project-guide/  # 项目规范
 ```
 
 ## 下一步
