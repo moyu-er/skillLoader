@@ -117,7 +117,8 @@ public final class SkillLoader {
             String encoding = (String) parser.get("encoding");
             ParserConfig parserConfig = new ParserConfig(
                 markerFile != null ? markerFile : "SKILL.md",
-                encoding != null ? encoding : "UTF-8"
+                encoding != null ? encoding : "UTF-8",
+                ParserConfig.DEFAULT_MAX_FILE_SIZE
             );
             builder.parser(parserConfig);
         }
