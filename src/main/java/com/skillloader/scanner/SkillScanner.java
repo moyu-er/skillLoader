@@ -124,12 +124,45 @@ public class SkillScanner {
     
     /**
      * 扫描 Classpath 条目。
-     * 注：Classpath 扫描有限制，通常只支持一级。
+     * 扫描 classpath 下的指定目录，发现所有 skill。
      */
-    private List<Skill> scanClasspathEntry(PathEntry entry, SecureFileReader reader) {
-        // Classpath 扫描实现较复杂，返回空列表
-        // 实际应用中可以扩展支持
-        return List.of();
+    private List<Skill> scanClasspathEntry(PathEntry entry, SecureFileReader reader) throws IOException {
+        Path basePath = Path.of(entry.path());
+        return scanClasspathDirectory(basePath, entry, reader, 0);
+    }
+    
+    /**
+     * 递归扫描 Classpath 目录。
+     */
+    private List<Skill> scanClasspathDirectory(Path dir, PathEntry entry, SecureFileReader reader, int depth) 
+            throws IOException {
+        // 深度检查
+        if (depth > securityConfig.maxDepth()) {
+            return List.of();
+        }
+        
+        List<Skill> skills = new ArrayList<>();
+        
+        List<Path> contents;
+        try {
+            contents = reader.listDirectory(dir);
+        } catch (SecurityException e) {
+            // 权限问题，跳过
+            return skills;
+        }
+        
+        for (Path item : contents) {
+            // 检查是否是 skill 目录（包含 marker file）
+            if (isSkillDirectory(item, reader)) {
+                Skill skill = createSkill(item, entry, reader);
+                skills.add(skill);
+            } else {
+                // 递归扫描子目录
+                skills.addAll(scanClasspathDirectory(item, entry, reader, depth + 1));
+            }
+        }
+        
+        return skills;
     }
     
     /**

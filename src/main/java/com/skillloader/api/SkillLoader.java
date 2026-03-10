@@ -2,6 +2,7 @@ package com.skillloader.api;
 
 import com.skillloader.api.exceptions.SkillLoaderException;
 import com.skillloader.api.exceptions.SkillNotFoundException;
+import com.skillloader.cache.SkillContentCache;
 import com.skillloader.config.*;
 import com.skillloader.generator.AgentsMdGenerator;
 import com.skillloader.generator.DefaultAgentsMdGenerator;
@@ -12,6 +13,7 @@ import com.skillloader.parser.SimpleYamlParser;
 import com.skillloader.parser.SkillParser;
 import com.skillloader.registry.DefaultSkillRegistry;
 import com.skillloader.registry.SkillRegistry;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,12 +33,14 @@ public final class SkillLoader {
     private final SkillRegistry registry;
     private final SkillParser parser;
     private final AgentsMdGenerator generator;
+    private final SkillContentCache cache;
 
     private SkillLoader(SkillLoaderConfig config) {
         this.config = Objects.requireNonNull(config);
         this.registry = new DefaultSkillRegistry(config);
         this.parser = new SimpleYamlParser(config.parser().markerFile(), config.parser().encoding());
         this.generator = new DefaultAgentsMdGenerator();
+        this.cache = new SkillContentCache(config.cache());
     }
 
     /**
@@ -70,11 +74,25 @@ public final class SkillLoader {
      * 解析配置文件内容。
      */
     private static SkillLoaderConfig parseConfig(String content) throws SkillLoaderException {
-        // 简单的 YAML 配置解析
-        Map<String, Object> config = SimpleYamlParser.parseFrontmatter(content);
+        Yaml yaml = new Yaml();
+        Map<String, Object> config;
+        try {
+            config = yaml.load(content);
+        } catch (Exception e) {
+            throw new SkillLoaderException("Failed to parse config file: " + e.getMessage(), e);
+        }
 
-        if (config.isEmpty()) {
+        if (config == null || config.isEmpty()) {
             throw new SkillLoaderException("Invalid config file: empty or invalid format");
+        }
+
+        // 支持两种格式：
+        // 1. 直接是 skillloader 根
+        // 2. 有 skillloader 嵌套
+        @SuppressWarnings("unchecked")
+        Map<String, Object> skillloaderConfig = (Map<String, Object>) config.get("skillloader");
+        if (skillloaderConfig != null) {
+            config = skillloaderConfig;
         }
 
         SkillLoaderConfig.Builder builder = SkillLoaderConfig.builder();
@@ -86,8 +104,8 @@ public final class SkillLoader {
             for (Map<String, Object> pathConfig : paths) {
                 String name = (String) pathConfig.get("name");
                 String path = (String) pathConfig.get("path");
-                Integer priority = (Integer) pathConfig.getOrDefault("priority", 10);
-                Boolean required = (Boolean) pathConfig.getOrDefault("required", false);
+                Integer priority = getInt(pathConfig, "priority", 10);
+                Boolean required = getBoolean(pathConfig, "required", false);
                 String type = (String) pathConfig.getOrDefault("type", "filesystem");
 
                 if (name == null || path == null) {
@@ -103,9 +121,9 @@ public final class SkillLoader {
         @SuppressWarnings("unchecked")
         Map<String, Object> security = (Map<String, Object>) config.get("security");
         if (security != null) {
-            Boolean strictMode = (Boolean) security.getOrDefault("strictMode", true);
-            Boolean allowSymlinks = (Boolean) security.getOrDefault("allowSymlinks", false);
-            Integer maxDepth = (Integer) security.getOrDefault("maxDepth", 10);
+            Boolean strictMode = getBoolean(security, "strictMode", true);
+            Boolean allowSymlinks = getBoolean(security, "allowSymlinks", false);
+            Integer maxDepth = getInt(security, "maxDepth", 10);
             builder.security(new SecurityConfig(strictMode, allowSymlinks, maxDepth));
         }
 
@@ -123,7 +141,47 @@ public final class SkillLoader {
             builder.parser(parserConfig);
         }
 
+        // 解析 generator 配置
+        @SuppressWarnings("unchecked")
+        Map<String, Object> generator = (Map<String, Object>) config.get("generator");
+        if (generator != null) {
+            Boolean enabled = getBoolean(generator, "enabled", false);
+            String template = (String) generator.getOrDefault("template", GeneratorConfig.DEFAULT_TEMPLATE);
+            String markerStart = (String) generator.getOrDefault("markerStart", GeneratorConfig.DEFAULT_MARKER_START);
+            String markerEnd = (String) generator.getOrDefault("markerEnd", GeneratorConfig.DEFAULT_MARKER_END);
+            builder.generator(new GeneratorConfig(template, markerStart, markerEnd, enabled));
+        }
+
+        // 解析 cache 配置
+        @SuppressWarnings("unchecked")
+        Map<String, Object> cache = (Map<String, Object>) config.get("cache");
+        if (cache != null) {
+            Boolean enabled = getBoolean(cache, "enabled", true);
+            Integer maxSize = getInt(cache, "maxSize", CacheConfig.DEFAULT_MAX_SIZE);
+            Integer expireMinutes = getInt(cache, "expireAfterAccessMinutes", (int) CacheConfig.DEFAULT_EXPIRE_MINUTES);
+            builder.cache(new CacheConfig(enabled, maxSize, expireMinutes));
+        }
+
         return builder.build();
+    }
+
+    private static Integer getInt(Map<String, Object> map, String key, int defaultValue) {
+        Object value = map.get(key);
+        if (value instanceof Integer) {
+            return (Integer) value;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return defaultValue;
+    }
+
+    private static Boolean getBoolean(Map<String, Object> map, String key, boolean defaultValue) {
+        Object value = map.get(key);
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        return defaultValue;
     }
 
     /**
@@ -142,6 +200,7 @@ public final class SkillLoader {
 
     /**
      * 加载指定 skill 的完整内容。
+     * 使用缓存避免重复读取文件。
      *
      * @throws SkillNotFoundException skill 不存在
      */
@@ -149,7 +208,36 @@ public final class SkillLoader {
         Skill skill = registry.find(skillName)
             .orElseThrow(() -> new SkillNotFoundException(skillName));
 
-        return parser.parse(skill.location());
+        // 使用缓存加载
+        return cache.get(skill.location(), parser::parse);
+    }
+
+    /**
+     * 从缓存获取 skill 内容（如果存在）。
+     */
+    public Optional<SkillContent> getFromCache(String skillName) {
+        return registry.find(skillName).flatMap(skill -> cache.getIfPresent(skill.location()));
+    }
+
+    /**
+     * 使指定 skill 的缓存失效。
+     */
+    public void invalidateCache(String skillName) {
+        registry.find(skillName).ifPresent(skill -> cache.invalidate(skill.location()));
+    }
+
+    /**
+     * 清空所有缓存。
+     */
+    public void invalidateAllCache() {
+        cache.invalidateAll();
+    }
+
+    /**
+     * 获取缓存统计信息。
+     */
+    public SkillContentCache.CacheStats getCacheStats() {
+        return cache.getStats();
     }
 
     /**

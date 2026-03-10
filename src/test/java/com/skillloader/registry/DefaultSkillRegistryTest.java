@@ -43,7 +43,8 @@ class DefaultSkillRegistryTest {
             pathEntries,
             ParserConfig.defaults(),
             SecurityConfig.defaults(),
-            GeneratorConfig.defaults()
+            GeneratorConfig.defaults(),
+            CacheConfig.defaults()
         );
         return new DefaultSkillRegistry(config);
     }
