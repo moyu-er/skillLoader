@@ -23,6 +23,11 @@ jobs:
     - name: Verify Maven version
       run: mvn -version
     
+    - name: List test resources
+      run: |
+        echo "=== Test Resources ==="
+        find src/test/resources -type f | head -20
+    
     - name: Compile with Maven
       run: mvn clean compile -B
     
@@ -31,6 +36,7 @@ jobs:
     
     - name: Generate coverage report
       run: mvn jacoco:report -B
+      if: always()
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
