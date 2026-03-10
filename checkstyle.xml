@@ -17,7 +17,14 @@
         <property name="eachLine" value="true"/>
     </module>
 
+    <!-- 行长度 -->
+    <module name="LineLength">
+        <property name="max" value="120"/>
+        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+    </module>
+
     <module name="TreeWalker">
+
         <!-- 缩进检查 -->
         <module name="Indentation">
             <property name="basicOffset" value="4"/>
@@ -26,12 +33,6 @@
             <property name="throwsIndent" value="4"/>
             <property name="lineWrappingIndentation" value="4"/>
             <property name="arrayInitIndent" value="4"/>
-        </module>
-
-        <!-- 行长度 -->
-        <module name="LineLength">
-            <property name="max" value="120"/>
-            <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
         </module>
 
         <!-- 命名规范 -->
