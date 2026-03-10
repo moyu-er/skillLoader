@@ -42,8 +42,8 @@ public final class GeneratorConfig {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GeneratorConfig that = (GeneratorConfig) o;
-        return Objects.equals(template, that.template) &amp;&amp;
-               Objects.equals(markerStart, that.markerStart) &amp;&amp;
+        return Objects.equals(template, that.template) &&
+               Objects.equals(markerStart, that.markerStart) &&
                Objects.equals(markerEnd, that.markerEnd);
     }
     

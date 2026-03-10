@@ -71,9 +71,9 @@ public final class SkillLoaderConfig {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SkillLoaderConfig that = (SkillLoaderConfig) o;
-        return Objects.equals(paths, that.paths) &amp;&amp;
-               Objects.equals(parser, that.parser) &amp;&amp;
-               Objects.equals(security, that.security) &amp;&amp;
+        return Objects.equals(paths, that.paths) &&
+               Objects.equals(parser, that.parser) &&
+               Objects.equals(security, that.security) &&
                Objects.equals(generator, that.generator);
     }
     
