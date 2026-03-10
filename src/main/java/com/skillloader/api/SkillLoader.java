@@ -258,6 +258,22 @@ public final class SkillLoader {
             return this;
         }
 
+        public Builder generator(GeneratorConfig generatorConfig) {
+            configBuilder.generator(generatorConfig);
+            return this;
+        }
+
+        public Builder enableGenerator() {
+            GeneratorConfig defaultEnabled = new GeneratorConfig(
+                GeneratorConfig.DEFAULT_TEMPLATE,
+                GeneratorConfig.DEFAULT_MARKER_START,
+                GeneratorConfig.DEFAULT_MARKER_END,
+                true
+            );
+            configBuilder.generator(defaultEnabled);
+            return this;
+        }
+
         public SkillLoader build() {
             return new SkillLoader(configBuilder.build());
         }

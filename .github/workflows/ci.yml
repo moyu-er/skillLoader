@@ -14,7 +14,7 @@ on:
       - develop
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     
     steps:
@@ -36,14 +36,27 @@ jobs:
         find src/test/resources -type f 2>/dev/null | head -20 || echo "No test resources"
     
     - name: Compile with Maven
-      run: mvn clean compile -B --fail-at-end
+      run: mvn clean compile -B
     
-    - name: Run tests
-      run: mvn test -B --fail-at-end
-      continue-on-error: true
+    - name: Run unit tests
+      run: mvn test -B
+      id: unit-tests
+    
+    - name: Generate test report
+      run: mvn surefire-report:report -B
+      if: always()
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: |
+          target/surefire-reports/
+          target/site/surefire-report.html
     
     - name: Generate coverage report
-      run: mvn jacoco:report -B || true
+      run: mvn jacoco:report -B
       if: always()
     
     - name: Upload coverage to Codecov
@@ -68,5 +81,5 @@ jobs:
         cache: maven
     
     - name: Check code style
-      run: mvn checkstyle:check -B || true
+      run: mvn checkstyle:check -B
       continue-on-error: true
