@@ -122,11 +122,12 @@ public class DefaultAgentsMdGenerator implements AgentsMdGenerator {
     
     /**
      * XML 转义。
+     * 注意：必须先转义 &，再转义 < >
      */
     private String escapeXml(String text) {
         if (text == null) return "";
         return text
-            .replace("&", "&")
+            .replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;")
             .replace("\"", "&quot;")
