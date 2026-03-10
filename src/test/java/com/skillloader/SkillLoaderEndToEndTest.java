@@ -161,22 +161,22 @@ class SkillLoaderEndToEndTest {
         
         String agentsMd = loader.generateAgentsMd();
         
-        // 验证 XML 格式正确
-        assertThat(agentsMd).contains("&lt;skills_system");
-        assertThat(agentsMd).contains("&lt;/skills_system&gt;");
-        assertThat(agentsMd).contains("&lt;available_skills&gt;");
-        assertThat(agentsMd).contains("&lt;/available_skills&gt;");
-        assertThat(agentsMd).contains("&lt;!-- SKILLS_TABLE_START --&gt;");
-        assertThat(agentsMd).contains("&lt;!-- SKILLS_TABLE_END --&gt;");
+        // 验证 XML 格式正确（原始 XML 标签，非 HTML 转义）
+        assertThat(agentsMd).contains("<skills_system");
+        assertThat(agentsMd).contains("</skills_system>");
+        assertThat(agentsMd).contains("<available_skills>");
+        assertThat(agentsMd).contains("</available_skills>");
+        assertThat(agentsMd).contains("<!-- SKILLS_TABLE_START -->");
+        assertThat(agentsMd).contains("<!-- SKILLS_TABLE_END -->");
         
-        // 验证包含所有 skills
-        assertThat(agentsMd).contains("&lt;name&gt;skill-a&lt;/name&gt;");
-        assertThat(agentsMd).contains("&lt;name&gt;skill-b&lt;/name&gt;");
-        assertThat(agentsMd).contains("&lt;description&gt;Description A&lt;/description&gt;");
-        assertThat(agentsMd).contains("&lt;description&gt;Description B&lt;/description&gt;");
+        // 验证包含所有 skills（原始 XML 标签）
+        assertThat(agentsMd).contains("<name>skill-a</name>");
+        assertThat(agentsMd).contains("<name>skill-b</name>");
+        assertThat(agentsMd).contains("<description>Description A</description>");
+        assertThat(agentsMd).contains("<description>Description B</description>");
         
         // 验证包含使用说明
-        assertThat(agentsMd).contains("&lt;usage&gt;");
+        assertThat(agentsMd).contains("<usage>");
         assertThat(agentsMd).contains("How to use skills");
     }
     
@@ -221,10 +221,10 @@ class SkillLoaderEndToEndTest {
         assertThatThrownBy(() -> loader.load("non-existent"))
             .isInstanceOf(com.skillloader.api.exceptions.SkillNotFoundException.class);
         
-        // 生成空的 AGENTS.md
+        // 生成空的 AGENTS.md（原始 XML 标签）
         String agentsMd = loader.generateAgentsMd();
-        assertThat(agentsMd).contains("&lt;available_skills&gt;");
-        assertThat(agentsMd).contains("&lt;/available_skills&gt;");
+        assertThat(agentsMd).contains("<available_skills>");
+        assertThat(agentsMd).contains("</available_skills>");
     }
     
     @Test
