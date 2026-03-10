@@ -1,6 +1,6 @@
 ---
 name: skillloader-project-guide
-description: SkillLoader 项目开发规范。包含编码规范、JUnit 5 测试要求、CI/CD 流程、PR 规范等。
+description: SkillLoader 项目开发规范。包含编码规范、JUnit 5 测试要求、CI/CD 流程、PR 规范、本地验证流程等。
 tags: [java, junit5, cicd, pr, guidelines]
 ---
 
@@ -38,6 +38,87 @@ skillloader:
 - [ ] 写操作是否有必要？
 - [ ] 是否使用了 `generator.enabled` 保护？
 - [ ] 是否有更安全的替代方案（如只生成字符串）？
+
+---
+
+## 0. 本地验证流程（提交前必做）
+
+### 0.1 为什么需要本地验证？
+- 避免 CI 失败
+- 快速发现问题
+- 提高代码质量
+
+### 0.2 本地验证命令
+
+```bash
+# 1. 代码风格检查
+mvn checkstyle:check
+
+# 2. 编译
+mvn clean compile
+
+# 3. 运行所有单元测试（必须全部通过）
+mvn test
+
+# 4. 生成覆盖率报告
+mvn jacoco:report
+
+# 5. 一键验证所有（推荐）
+mvn clean verify
+```
+
+### 0.3 本地验证检查清单
+
+- [ ] `mvn checkstyle:check` 通过（无代码风格错误）
+- [ ] `mvn clean compile` 成功（无编译错误）
+- [ ] `mvn test` 通过（所有测试通过，无失败）
+- [ ] 测试覆盖率 ≥ 80%
+
+### 0.4 验证失败怎么办？
+
+```bash
+# 查看详细错误信息
+mvn test -X
+
+# 查看测试报告
+cat target/surefire-reports/*.txt
+
+# 修复问题后重新验证
+mvn clean verify
+```
+
+### 0.5 提交前流程
+
+```bash
+# 1. 拉取最新代码
+git checkout develop
+git pull origin develop
+
+# 2. 创建功能分支
+git checkout -b feature/my-feature
+
+# 3. 开发（编写代码+测试）
+
+# 4. 本地验证（必须全部通过）
+mvn clean verify
+
+# 5. 提交（验证通过后）
+git add -A
+git commit -m "feat: xxx"
+
+# 6. 推送到远程
+git push origin feature/my-feature
+
+# 7. 创建 PR
+gh pr create --base develop --head feature/my-feature
+```
+
+### 0.6 禁止行为
+
+❌ **以下行为禁止**：
+- 本地验证未通过就推送代码
+- 绕过验证直接合并 PR
+- 忽视 CI 失败警告
 
 ---
 
