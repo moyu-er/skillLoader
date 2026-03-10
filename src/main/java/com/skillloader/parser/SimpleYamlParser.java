@@ -227,4 +227,84 @@ public class SimpleYamlParser implements SkillParser {
         }
         return null;
     }
+    
+    /**
+     * 静态方法：解析 YAML frontmatter。
+     * 从字符串内容中提取 frontmatter 数据。
+     *
+     * @param content SKILL.md 内容
+     * @return frontmatter 键值对
+     */
+    public static Map<String, Object> parseFrontmatter(String content) {
+        Map<String, Object> result = new HashMap<>();
+        
+        if (content == null || content.isBlank()) {
+            return result;
+        }
+        
+        Matcher matcher = FRONTMATTER_PATTERN.matcher(content);
+        if (!matcher.find()) {
+            return result; // 没有找到 frontmatter，返回空 map
+        }
+        
+        String yamlContent = matcher.group(1).trim();
+        return parseYamlStatic(yamlContent);
+    }
+    
+    /**
+     * 静态解析 YAML 内容（简化版）。
+     */
+    private static Map<String, Object> parseYamlStatic(String yaml) {
+        Map<String, Object> result = new HashMap<>();
+        
+        for (String line : yaml.split("\\n")) {
+            line = line.trim();
+            if (line.isEmpty() || line.startsWith("#")) {
+                continue;
+            }
+            
+            int colonIndex = line.indexOf(':');
+            if (colonIndex > 0) {
+                String key = line.substring(0, colonIndex).trim();
+                String value = line.substring(colonIndex + 1).trim();
+                
+                // 移除引号
+                if ((value.startsWith("\"") && value.endsWith("\"")) ||
+                    (value.startsWith("'") && value.endsWith("'"))) {
+                    value = value.substring(1, value.length() - 1);
+                }
+                
+                // 尝试解析为列表
+                if (value.startsWith("[") && value.endsWith("]")) {
+                    result.put(key, parseListStatic(value));
+                } else {
+                    result.put(key, value);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 静态解析列表字符串。
+     */
+    private static List<String> parseListStatic(String value) {
+        List<String> result = new ArrayList<>();
+        String content = value.substring(1, value.length() - 1);
+        
+        for (String item : content.split(",")) {
+            item = item.trim();
+            // 移除引号
+            if ((item.startsWith("\"") && item.endsWith("\"")) ||
+                (item.startsWith("'") && item.endsWith("'"))) {
+                item = item.substring(1, item.length() - 1);
+            }
+            if (!item.isEmpty()) {
+                result.add(item);
+            }
+        }
+        
+        return result;
+    }
 }
