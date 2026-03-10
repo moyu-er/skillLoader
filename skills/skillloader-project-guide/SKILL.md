@@ -6,6 +6,41 @@ tags: [java, junit5, cicd, pr, guidelines]
 
 # SkillLoader 项目开发规范
 
+## 重要：写操作规范
+
+SkillLoader 是**只读**设计，但提供可选的 AGENTS.md 生成功能。
+
+### 写操作列表
+
+| 方法 | 操作 | 默认状态 | 启用条件 |
+|------|------|----------|----------|
+| `syncToFile(Path)` | 写入 AGENTS.md | ❌ 禁用 | `generator.enabled=true` |
+| `updateFile(Path)` | 更新 AGENTS.md | ❌ 禁用 | `generator.enabled=true` |
+
+### 安全原则
+
+1. **默认禁用**：所有写操作默认关闭，防止意外文件修改
+2. **显式启用**：必须在配置中明确设置 `generator.enabled: true`
+3. **只读优先**：`generateAgentsMd()` 只返回字符串，不写入文件
+
+### 配置示例
+
+```yaml
+skillloader:
+  generator:
+    enabled: false  # 默认 false，生产环境建议保持关闭
+    marker-start: "<!-- SKILLS_TABLE_START -->"
+    marker-end: "<!-- SKILLS_TABLE_END -->"
+```
+
+### 代码审查检查项
+
+- [ ] 写操作是否有必要？
+- [ ] 是否使用了 `generator.enabled` 保护？
+- [ ] 是否有更安全的替代方案（如只生成字符串）？
+
+---
+
 ## 1. 编码规范
 
 ### 1.1 Java 版本
