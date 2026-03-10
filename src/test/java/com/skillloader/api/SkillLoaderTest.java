@@ -105,7 +105,11 @@ class SkillLoaderTest {
     
     @Test
     void shouldSyncToFile() throws Exception {
-        SkillLoader loader = createLoader();
+        SkillLoader loader = SkillLoader.builder()
+            .addFilesystemPath("test", tempDir.toString())
+            .enableGenerator()
+            .build();
+        createSkill(tempDir, "pdf");
         Path agentsFile = tempDir.resolve("AGENTS.md");
         
         loader.syncToFile(agentsFile);
@@ -117,7 +121,11 @@ class SkillLoaderTest {
     
     @Test
     void shouldUpdateFile() throws Exception {
-        SkillLoader loader = createLoader();
+        SkillLoader loader = SkillLoader.builder()
+            .addFilesystemPath("test", tempDir.toString())
+            .enableGenerator()
+            .build();
+        createSkill(tempDir, "pdf");
         Path agentsFile = tempDir.resolve("AGENTS.md");
         Files.writeString(agentsFile, "# Existing\n\nOld content");
         
@@ -126,6 +134,16 @@ class SkillLoaderTest {
         String content = Files.readString(agentsFile);
         assertThat(content).contains("# Existing");
         assertThat(content).contains("<skills_system");
+    }
+    
+    @Test
+    void shouldThrowWhenSyncToFileWithoutEnablingGenerator() throws Exception {
+        SkillLoader loader = createLoader();
+        Path agentsFile = tempDir.resolve("AGENTS.md");
+        
+        assertThatThrownBy(() -> loader.syncToFile(agentsFile))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("AGENTS.md generation is disabled");
     }
     
     @Test

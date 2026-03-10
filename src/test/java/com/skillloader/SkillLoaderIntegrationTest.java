@@ -45,9 +45,10 @@ class SkillLoaderIntegrationTest {
         createSkill(tempDir, "pdf", "PDF manipulation toolkit");
         createSkill(tempDir, "weather", "Weather forecast queries");
         
-        // 2. 创建 loader
+        // 2. 创建 loader（启用 generator 以支持写操作）
         SkillLoader loader = SkillLoader.builder()
             .addFilesystemPath("test", tempDir.toString())
+            .enableGenerator()
             .build();
         
         // 3. 发现 skills

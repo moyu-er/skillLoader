@@ -42,12 +42,30 @@ System.out.println(content.metadata().description());
 System.out.println(content.markdownContent());
 ```
 
-### 自定义配置
+### 自定义配置（启用 AGENTS.md 生成）
+
+```java
+import com.skillloader.config.GeneratorConfig;
+
+SkillLoader loader = SkillLoader.builder()
+    .addFilesystemPath("project", "./my-skills", 10, false)
+    .addClasspathPath("builtin", "/skills", 20, false)
+    .enableGenerator()  // 启用 AGENTS.md 生成功能
+    .build();
+```
+
+### 自定义配置（完整配置）
 
 ```java
 SkillLoader loader = SkillLoader.builder()
     .addFilesystemPath("project", "./my-skills", 10, false)
     .addClasspathPath("builtin", "/skills", 20, false)
+    .generator(new GeneratorConfig(
+        "default",                              // template
+        "<!-- SKILLS_TABLE_START -->",       // markerStart
+        "<!-- SKILLS_TABLE_END -->",         // markerEnd
+        true                                    // enabled
+    ))
     .build();
 ```
 

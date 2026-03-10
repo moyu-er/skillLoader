@@ -76,7 +76,7 @@ class SkillLoaderConfigTest {
     void shouldPreserveCustomConfigs() {
         ParserConfig parser = new ParserConfig("CUSTOM.md", "GBK", 2048);
         SecurityConfig security = new SecurityConfig(false, true, 5);
-        GeneratorConfig generator = new GeneratorConfig("custom", "START", "END");
+        GeneratorConfig generator = new GeneratorConfig("custom", "START", "END", true);
         
         SkillLoaderConfig config = SkillLoaderConfig.builder()
             .addPath(new PathEntry("test", "./skills", 10, false, PathType.FILESYSTEM))
