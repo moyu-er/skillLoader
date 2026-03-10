@@ -214,6 +214,16 @@ feature/* (功能分支)
 
 详细规范见 `skills/skillloader-git-workflow/SKILL.md`
 
+## 文档
+
+| 文档 | 说明 | 链接 |
+|------|------|------|
+| **快速开始** | 基础使用和配置示例 | [README.md](./README.md) |
+| **使用指南** | 详细教程和 AI 集成示例 | [USAGE_GUIDE.md](./USAGE_GUIDE.md) |
+| **外部服务集成** | 平台/框架开发者集成指南 | [docs/integration/external-service.md](./docs/integration/external-service.md) |
+| **API 参考** | 完整 API 文档 | [docs/api/api-reference.md](./docs/api/api-reference.md) |
+| **部署指南** | Maven、Docker、K8s 部署 | [docs/deployment/deployment-guide.md](./docs/deployment/deployment-guide.md) |
+
 ## 修复记录
 
 | Issue | 问题 | 修复 |
