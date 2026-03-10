@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -47,10 +48,81 @@ public final class SkillLoader {
     
     /**
      * 从配置文件创建。
+     * 支持 YAML/JSON 格式的配置文件。
      */
     public static SkillLoader fromConfig(Path configPath) throws SkillLoaderException {
-        // TODO: 实现配置加载
-        throw new UnsupportedOperationException("Config loading not implemented yet");
+        Objects.requireNonNull(configPath, "configPath cannot be null");
+        
+        if (!Files.exists(configPath)) {
+            throw new SkillLoaderException("Config file not found: " + configPath);
+        }
+        
+        try {
+            String content = Files.readString(configPath);
+            SkillLoaderConfig config = parseConfig(content);
+            return new SkillLoader(config);
+        } catch (IOException e) {
+            throw new SkillLoaderException("Failed to read config file: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * 解析配置文件内容。
+     */
+    private static SkillLoaderConfig parseConfig(String content) throws SkillLoaderException {
+        // 简单的 YAML 配置解析
+        Map<String, Object> config = SimpleYamlParser.parseFrontmatter(content);
+        
+        if (config.isEmpty()) {
+            throw new SkillLoaderException("Invalid config file: empty or invalid format");
+        }
+        
+        SkillLoaderConfig.Builder builder = SkillLoaderConfig.builder();
+        
+        // 解析 paths
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> paths = (List<Map<String, Object>>) config.get("paths");
+        if (paths != null) {
+            for (Map<String, Object> pathConfig : paths) {
+                String name = (String) pathConfig.get("name");
+                String path = (String) pathConfig.get("path");
+                Integer priority = (Integer) pathConfig.getOrDefault("priority", 10);
+                Boolean required = (Boolean) pathConfig.getOrDefault("required", false);
+                String type = (String) pathConfig.getOrDefault("type", "filesystem");
+                
+                if (name == null || path == null) {
+                    throw new SkillLoaderException("Path config missing name or path");
+                }
+                
+                PathType pathType = "classpath".equalsIgnoreCase(type) ? PathType.CLASSPATH : PathType.FILESYSTEM;
+                builder.addPath(new PathEntry(name, path, priority, required, pathType));
+            }
+        }
+        
+        // 解析 security 配置
+        @SuppressWarnings("unchecked")
+        Map<String, Object> security = (Map<String, Object>) config.get("security");
+        if (security != null) {
+            Boolean strictMode = (Boolean) security.getOrDefault("strictMode", true);
+            Boolean allowSymlinks = (Boolean) security.getOrDefault("allowSymlinks", false);
+            Integer maxDepth = (Integer) security.getOrDefault("maxDepth", 10);
+            builder.security(new SecurityConfig(strictMode, allowSymlinks, maxDepth));
+        }
+        
+        // 解析 parser 配置
+        @SuppressWarnings("unchecked")
+        Map<String, Object> parser = (Map<String, Object>) config.get("parser");
+        if (parser != null) {
+            String markerFile = (String) parser.get("markerFile");
+            String encoding = (String) parser.get("encoding");
+            ParserConfig parserConfig = new ParserConfig(
+                markerFile != null ? markerFile : "SKILL.md",
+                encoding != null ? encoding : "UTF-8"
+            );
+            builder.parser(parserConfig);
+        }
+        
+        return builder.build();
     }
     
     /**
