@@ -36,8 +36,8 @@ public final class ResourceRef {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ResourceRef that = (ResourceRef) o;
-        return Objects.equals(name, that.name) &amp;&amp;
-               Objects.equals(uri, that.uri) &amp;&amp;
+        return Objects.equals(name, that.name) &&
+               Objects.equals(uri, that.uri) &&
                type == that.type;
     }
     

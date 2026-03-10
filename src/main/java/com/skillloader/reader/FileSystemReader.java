@@ -110,7 +110,7 @@ public class FileSystemReader implements SecureFileReader {
         Path normalized = normalize(path);
         
         // 检查符号链接
-        if (!securityConfig.allowSymlinks() &amp;&amp; Files.isSymbolicLink(normalized)) {
+        if (!securityConfig.allowSymlinks() && Files.isSymbolicLink(normalized)) {
             throw new SecurityException("Symbolic links are not allowed: " + path);
         }
     }

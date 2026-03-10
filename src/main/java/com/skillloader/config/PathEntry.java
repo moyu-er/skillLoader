@@ -46,10 +46,10 @@ public final class PathEntry {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PathEntry pathEntry = (PathEntry) o;
-        return priority == pathEntry.priority &amp;&amp;
-               required == pathEntry.required &amp;&amp;
-               Objects.equals(name, pathEntry.name) &amp;&amp;
-               Objects.equals(path, pathEntry.path) &amp;&amp;
+        return priority == pathEntry.priority &&
+               required == pathEntry.required &&
+               Objects.equals(name, pathEntry.name) &&
+               Objects.equals(path, pathEntry.path) &&
                type == pathEntry.type;
     }
     
