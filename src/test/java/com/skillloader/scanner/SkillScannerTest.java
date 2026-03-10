@@ -249,3 +249,4 @@ class SkillScannerTest {
         assertThat(skills.get(0).name()).isEqualTo("fallback-name");
         assertThat(skills.get(0).description()).isEqualTo("Only description, no name");
     }
+}
