@@ -201,7 +201,19 @@ class SkillScannerTest {
     }
     
     @Test
-    void shouldHandleEmptyDirectory() throws Exception {
+    void shouldParseNameAndDescriptionFromSkillMd() throws Exception {
+        Path skillDir = tempDir.resolve("directory-name");
+        Files.createDirectories(skillDir);
+        String content = """
+            ---
+            name: custom-skill-name
+            description: This is the custom description
+            ---
+            # Skill Content
+            Test content.
+            """;
+        Files.writeString(skillDir.resolve("SKILL.md"), content);
+        
         List<PathEntry> paths = List.of(
             new PathEntry("test", tempDir.toString(), 10, false, PathType.FILESYSTEM)
         );
@@ -209,6 +221,31 @@ class SkillScannerTest {
         
         List<Skill> skills = scanner.scanAll();
         
-        assertThat(skills).isEmpty();
+        assertThat(skills).hasSize(1);
+        assertThat(skills.get(0).name()).isEqualTo("custom-skill-name");
+        assertThat(skills.get(0).description()).isEqualTo("This is the custom description");
     }
-}
+    
+    @Test
+    void shouldUseDirectoryNameWhenSkillMdHasNoName() throws Exception {
+        Path skillDir = tempDir.resolve("fallback-name");
+        Files.createDirectories(skillDir);
+        String content = """
+            ---
+            description: Only description, no name
+            ---
+            # Skill Content
+            """;
+        Files.writeString(skillDir.resolve("SKILL.md"), content);
+        
+        List<PathEntry> paths = List.of(
+            new PathEntry("test", tempDir.toString(), 10, false, PathType.FILESYSTEM)
+        );
+        SkillScanner scanner = new SkillScanner(paths, SecurityConfig.defaults(), "SKILL.md");
+        
+        List<Skill> skills = scanner.scanAll();
+        
+        assertThat(skills).hasSize(1);
+        assertThat(skills.get(0).name()).isEqualTo("fallback-name");
+        assertThat(skills.get(0).description()).isEqualTo("Only description, no name");
+    }
