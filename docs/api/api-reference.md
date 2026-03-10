@@ -313,4 +313,82 @@ public class SkillDemo {
         }
     }
 }
+
+---
+
+## 工具类
+
+### SkillMetadataFormatter
+
+用于格式化 skill 元数据的工具类，支持智能省略空字段和自定义格式。
+
+#### 静态方法
+
+| 方法 | 说明 |
+|------|------|
+| `format(Skill)` | 默认格式：`- **name**: description` |
+| `format(SkillMetadata)` | 从元数据格式化（智能省略空 tags/context）|
+| `format(SkillMetadata, FormatOptions)` | 使用自定义选项格式化 |
+| `format(Skill, Function<Skill, String>)` | 使用自定义函数格式化 |
+| `formatDetailed(Skill)` | 详细格式（包含 source 和 priority）|
+| `toSystemPrompt(Iterable<Skill>, String)` | 生成系统提示词片段 |
+| `toSystemPrompt(Iterable<Skill>, String, Function<Skill, String>)` | 使用自定义格式生成系统提示词 |
+
+#### 示例
+
+```java
+import com.skillloader.util.SkillMetadataFormatter;
+import com.skillloader.util.SkillMetadataFormatter.FormatOptions;
+
+// 简单用法 - 生成系统提示词
+List<Skill> skills = loader.discover();
+String prompt = "你是一个智能助手。\\n\\n" +
+    SkillMetadataFormatter.toSystemPrompt(skills, "可用 Skills");
+
+// 输出：
+// ## 可用 Skills
+// 
+// - **git-workflow**: Git workflow guidelines
+// - **python-style**: Python coding standards
+
+// 自定义选项
+FormatOptions options = FormatOptions.builder()
+    .namePrefix("### ")
+    .separator("\\n")
+    .includeTags(false)
+    .build();
+
+String formatted = SkillMetadataFormatter.format(metadata, options);
+
+// 完全自定义
+String custom = SkillMetadataFormatter.format(skill, s ->
+    String.format("📦 %s: %s", s.name(), s.description())
+);
+```
+
+#### FormatOptions
+
+| 属性 | 默认值 | 说明 |
+|------|--------|------|
+| `namePrefix` | `- **` | 名称前缀 |
+| `nameSuffix` | `**` | 名称后缀 |
+| `separator` | `: ` | 名称和描述之间的分隔符 |
+| `fieldSeparator` | ` \\| ` | 字段之间的分隔符 |
+| `tagSeparator` | `, ` | 标签之间的分隔符 |
+| `includeDescription` | `true` | 是否包含描述 |
+| `includeContext` | `false` | 是否包含上下文 |
+| `includeTags` | `true` | 是否包含标签（空时自动省略）|
+| `includeExtra` | `false` | 是否包含额外字段 |
+
+```java
+// 构建自定义选项
+FormatOptions options = FormatOptions.builder()
+    .namePrefix("[")
+    .nameSuffix("]")
+    .separator(" → ")
+    .tagSeparator(" | ")
+    .includeContext(true)
+    .includeExtra(true)
+    .build();
+```
 ```
