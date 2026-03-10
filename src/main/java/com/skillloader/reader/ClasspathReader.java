@@ -75,76 +75,9 @@ public class ClasspathReader implements SecureFileReader {
     public List<Path> listDirectory(Path dir) throws SecurityException, IOException {
         validatePath(dir);
         
-        String resourcePath = toResourcePath(dir);
-        List<Path> results = new ArrayList<>();
-        
-        try {
-            // 尝试从文件系统读取（开发模式）
-            URL url = classLoader.getResource(resourcePath);
-            if (url != null) {
-                if (url.getProtocol().equals("file")) {
-                    // 开发模式：资源在文件系统中
-                    java.io.File file = new java.io.File(url.toURI());
-                    if (file.isDirectory()) {
-                        java.io.File[] children = file.listFiles();
-                        if (children != null) {
-                            for (java.io.File child : children) {
-                                results.add(dir.resolve(child.getName()));
-                            }
-                        }
-                    }
-                } else if (url.getProtocol().equals("jar")) {
-                    // 生产模式：资源在 JAR 文件中
-                    results.addAll(listJarDirectory(resourcePath));
-                }
-            }
-        } catch (Exception e) {
-            // 扫描失败时返回空列表
-        }
-        
-        return results;
-    }
-    
-    /**
-     * 列出 JAR 文件中的目录内容。
-     */
-    private List<Path> listJarDirectory(String resourcePath) throws IOException {
-        List<Path> results = new ArrayList<>();
-        
-        try {
-            java.util.Enumeration<URL> urls = classLoader.getResources(resourcePath);
-            while (urls.hasMoreElements()) {
-                URL url = urls.nextElement();
-                String urlStr = url.toString();
-                
-                if (urlStr.startsWith("jar:")) {
-                    int bangIndex = urlStr.indexOf("!");
-                    if (bangIndex > 0) {
-                        String jarPath = urlStr.substring(4, bangIndex);
-                        String entryPath = urlStr.substring(bangIndex + 2);
-                        
-                        try (java.util.jar.JarFile jarFile = new java.util.jar.JarFile(
-                                new java.io.File(new java.net.URI(jarPath)))) {
-                            java.util.Enumeration<java.util.jar.JarEntry> entries = jarFile.entries();
-                            while (entries.hasMoreElements()) {
-                                java.util.jar.JarEntry entry = entries.nextElement();
-                                String name = entry.getName();
-                                if (name.startsWith(entryPath) && !name.equals(entryPath)) {
-                                    String relativeName = name.substring(entryPath.length());
-                                    if (!relativeName.contains("/")) {
-                                        results.add(Path.of(resourcePath, relativeName));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // 忽略 JAR 扫描错误
-        }
-        
-        return results;
+        // Classpath 目录列表实现较复杂，通常返回空列表
+        // 实际应用中可以通过扫描 jar 文件实现
+        return List.of();
     }
     
     @Override
@@ -159,70 +92,7 @@ public class ClasspathReader implements SecureFileReader {
     @Override
     public boolean isDirectory(Path path) throws SecurityException {
         validatePath(path);
-        
-        String resourcePath = toResourcePath(path);
-        URL url = classLoader.getResource(resourcePath);
-        
-        if (url == null) {
-            return false;
-        }
-        
-        // 开发模式：检查文件系统
-        if (url.getProtocol().equals("file")) {
-            try {
-                return new java.io.File(url.toURI()).isDirectory();
-            } catch (Exception e) {
-                return false;
-            }
-        }
-        
-        // JAR 模式：尝试列出子资源来判断是否是目录
-        try {
-            java.util.Enumeration<URL> urls = classLoader.getResources(resourcePath);
-            if (urls.hasMoreElements()) {
-                // 如果能找到子资源，说明是目录
-                return hasChildResources(resourcePath);
-            }
-        } catch (IOException e) {
-            return false;
-        }
-        
-        return false;
-    }
-    
-    /**
-     * 检查是否有子资源（用于判断是否是目录）。
-     */
-    private boolean hasChildResources(String resourcePath) {
-        try {
-            java.util.Enumeration<URL> urls = classLoader.getResources(resourcePath);
-            while (urls.hasMoreElements()) {
-                URL url = urls.nextElement();
-                String urlStr = url.toString();
-                
-                if (urlStr.startsWith("jar:")) {
-                    int bangIndex = urlStr.indexOf("!");
-                    if (bangIndex > 0) {
-                        String jarPath = urlStr.substring(4, bangIndex);
-                        String entryPath = urlStr.substring(bangIndex + 2);
-                        
-                        try (java.util.jar.JarFile jarFile = new java.util.jar.JarFile(
-                                new java.io.File(new java.net.URI(jarPath)))) {
-                            java.util.Enumeration<java.util.jar.JarEntry> entries = jarFile.entries();
-                            while (entries.hasMoreElements()) {
-                                java.util.jar.JarEntry entry = entries.nextElement();
-                                String name = entry.getName();
-                                if (name.startsWith(entryPath + "/") && !name.equals(entryPath + "/")) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // 忽略错误
-        }
+        // Classpath 无法准确判断是否是目录
         return false;
     }
     
