@@ -1,0 +1,9 @@
+# Git Branching Model
+
+This is a placeholder for the branching model diagram.
+In real usage, this would be a PNG/SVG image showing:
+- main branch
+- develop branch
+- feature branches
+- release branches
+- hotfix branches

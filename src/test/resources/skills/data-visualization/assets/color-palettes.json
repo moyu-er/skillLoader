@@ -1,0 +1,12 @@
+{
+  "palettes": [
+    {
+      "name": "default",
+      "colors": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+    },
+    {
+      "name": "warm",
+      "colors": ["#ff6b6b", "#f9ca24", "#f0932b", "#eb4d4b", "#6c5ce7"]
+    }
+  ]
+}
