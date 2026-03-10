@@ -14,15 +14,18 @@ public final class GeneratorConfig {
     private final String template;
     private final String markerStart;
     private final String markerEnd;
+    private final boolean enabled;  // AGENTS.md 生成功能开关，默认关闭
     
-    public GeneratorConfig(String template, String markerStart, String markerEnd) {
+    public GeneratorConfig(String template, String markerStart, String markerEnd, boolean enabled) {
         this.template = template != null ? template : DEFAULT_TEMPLATE;
         this.markerStart = markerStart != null ? markerStart : DEFAULT_MARKER_START;
         this.markerEnd = markerEnd != null ? markerEnd : DEFAULT_MARKER_END;
+        this.enabled = enabled;
     }
     
     public static GeneratorConfig defaults() {
-        return new GeneratorConfig(DEFAULT_TEMPLATE, DEFAULT_MARKER_START, DEFAULT_MARKER_END);
+        // 默认禁用 AGENTS.md 生成功能
+        return new GeneratorConfig(DEFAULT_TEMPLATE, DEFAULT_MARKER_START, DEFAULT_MARKER_END, false);
     }
     
     public String template() {
@@ -37,19 +40,28 @@ public final class GeneratorConfig {
         return markerEnd;
     }
     
+    /**
+     * AGENTS.md 生成功能是否启用。
+     * 默认关闭（false）。
+     */
+    public boolean enabled() {
+        return enabled;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GeneratorConfig that = (GeneratorConfig) o;
-        return Objects.equals(template, that.template) &&
+        return enabled == that.enabled &&
+               Objects.equals(template, that.template) &&
                Objects.equals(markerStart, that.markerStart) &&
                Objects.equals(markerEnd, that.markerEnd);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(template, markerStart, markerEnd);
+        return Objects.hash(template, markerStart, markerEnd, enabled);
     }
     
     @Override
@@ -58,6 +70,7 @@ public final class GeneratorConfig {
                "template='" + template + '\'' +
                ", markerStart='" + markerStart + '\'' +
                ", markerEnd='" + markerEnd + '\'' +
+               ", enabled=" + enabled +
                '}';
     }
 }
