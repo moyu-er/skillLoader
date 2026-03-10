@@ -1,0 +1,41 @@
+# SkillLoader 配置文件示例
+# 放置于项目根目录，命名为 skillloader.yml
+
+skillloader:
+  # 扫描路径配置（按优先级排序，数字小的优先）
+  paths:
+    - name: project-skills
+      path: ./skills
+      priority: 10
+      required: false
+      type: filesystem
+    
+    - name: user-skills
+      path: ~/.skills
+      priority: 20
+      required: false
+      type: filesystem
+    
+    # classpath 路径示例
+    - name: builtin-skills
+      path: classpath:/skills
+      priority: 30
+      required: false
+      type: classpath
+
+  # 安全配置
+  security:
+    strict-mode: true        # 严格模式：遇到安全问题立即失败
+    allow-symlinks: false    # 是否允许符号链接
+    max-depth: 3             # 最大扫描深度
+
+  # 解析器配置
+  parser:
+    marker-file: SKILL.md    # skill 标记文件名
+    encoding: UTF-8          # 文件编码
+
+  # AGENTS.md 生成器配置（可选功能，默认关闭）
+  generator:
+    enabled: false           # 默认 false，启用后才允许写操作
+    marker-start: "<!-- SKILLS_TABLE_START -->"
+    marker-end: "<!-- SKILLS_TABLE_END -->"

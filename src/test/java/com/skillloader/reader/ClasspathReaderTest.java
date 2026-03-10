@@ -93,11 +93,21 @@ class ClasspathReaderTest {
     }
     
     @Test
-    void shouldReturnEmptyListForDirectory() throws Exception {
+    void shouldListDirectoryContents() throws Exception {
         ClasspathReader reader = createReader("skills");
         List<Path> contents = reader.listDirectory(Path.of("skills"));
         
-        // Classpath 目录列表返回空
+        // 应该返回 skills 目录下的子目录列表
+        assertThat(contents).isNotEmpty();
+        assertThat(contents).allMatch(path -> path.startsWith("skills"));
+    }
+    
+    @Test
+    void shouldReturnEmptyListForNonExistentDirectory() throws Exception {
+        ClasspathReader reader = createReader("skills");
+        // 使用白名单内的路径，但该路径下没有资源
+        List<Path> contents = reader.listDirectory(Path.of("skills/non-existent-subdir"));
+        
         assertThat(contents).isEmpty();
     }
     
@@ -127,5 +137,43 @@ class ClasspathReaderTest {
         assertThat(reader.isAllowed(Path.of("skills/test.txt"))).isTrue();
         assertThat(reader.isAllowed(Path.of("config/app.yml"))).isTrue();
         assertThat(reader.isAllowed(Path.of("other/file.txt"))).isFalse();
+    }
+    
+    @Test
+    void shouldListNestedDirectoryContents() throws Exception {
+        ClasspathReader reader = createReader("skills");
+        // 测试嵌套目录列表（如 git-workflow/scripts）
+        List<Path> contents = reader.listDirectory(Path.of("skills/git-workflow"));
+        
+        // 应该返回 git-workflow 目录下的子目录/文件
+        assertThat(contents).isNotEmpty();
+        assertThat(contents).allMatch(path -> path.startsWith("skills/git-workflow"));
+    }
+    
+    @Test
+    void shouldReadSkillMarkdownContent() throws Exception {
+        ClasspathReader reader = createReader("skills");
+        Path skillPath = Path.of("skills/pdf/SKILL.md");
+        
+        String content = reader.read(skillPath);
+        
+        assertThat(content).isNotEmpty();
+        assertThat(content).contains("---"); // 应该包含 frontmatter
+    }
+    
+    @Test
+    void shouldVerifyAllTestSkillsAreListable() throws Exception {
+        ClasspathReader reader = createReader("skills");
+        List<Path> contents = reader.listDirectory(Path.of("skills"));
+        
+        // 验证测试资源目录中的所有 skills 都能被列出
+        List<String> skillNames = contents.stream()
+            .map(p -> p.getFileName().toString())
+            .toList();
+        
+        assertThat(skillNames).contains(
+            "pdf", "weather", "chart", "git-workflow", 
+            "python-quality", "data-visualization"
+        );
     }
 }

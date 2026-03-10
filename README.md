@@ -4,6 +4,14 @@ Java 21 轻量级 Skill Loader SDK，用于从本地目录加载 AI Agent Skills
 
 **新仓库地址**: https://github.com/moyu-er/skillLoader
 
+## 📚 文档
+
+| 文档 | 说明 |
+|------|------|
+| [INTEGRATION.md](docs/INTEGRATION.md) | SDK 集成指南（Maven、Spring Boot） |
+| [USAGE.md](docs/USAGE.md) | 使用指南（API、配置、最佳实践） |
+| [CONFIGURATION.md](docs/CONFIGURATION.md) | 配置详解（路径、安全、解析器、生成器） |
+
 ## 核心特性
 
 - 🔒 **只读设计** - 仅加载，不安装/不修改 skills

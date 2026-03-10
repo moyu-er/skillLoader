@@ -186,7 +186,7 @@ class SimpleYamlParserTest {
         
         assertThat(content.metadata().extra())
             .containsEntry("custom-field", "custom-value")
-            .containsEntry("another", "123");
+            .containsEntry("another", 123);
     }
     
     @Test
