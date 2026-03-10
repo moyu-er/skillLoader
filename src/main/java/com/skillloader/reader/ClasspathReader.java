@@ -4,12 +4,14 @@ import com.skillloader.api.exceptions.SecurityException;
 import com.skillloader.config.PathEntry;
 
 import java.io.*;
+import java.net.JarURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.nio.file.*;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Classpath 安全读取器实现。
@@ -75,9 +77,91 @@ public class ClasspathReader implements SecureFileReader {
     public List<Path> listDirectory(Path dir) throws SecurityException, IOException {
         validatePath(dir);
         
-        // Classpath 目录列表实现较复杂，通常返回空列表
-        // 实际应用中可以通过扫描 jar 文件实现
+        String resourcePath = toResourcePath(dir);
+        URL url = classLoader.getResource(resourcePath);
+        
+        if (url == null) {
+            return List.of();
+        }
+        
+        String protocol = url.getProtocol();
+        
+        if ("file".equals(protocol)) {
+            // 文件系统目录（开发模式）
+            return listFileSystemDirectory(dir, url);
+        } else if ("jar".equals(protocol)) {
+            // JAR 文件中的目录（生产模式）
+            return listJarDirectory(dir, resourcePath, url);
+        }
+        
         return List.of();
+    }
+    
+    private List<Path> listFileSystemDirectory(Path dir, URL url) throws IOException {
+        try {
+            Path path = Paths.get(url.toURI());
+            if (!Files.isDirectory(path)) {
+                return List.of();
+            }
+            
+            List<Path> result = new ArrayList<>();
+            try (var stream = Files.list(path)) {
+                stream.forEach(child -> {
+                    result.add(dir.resolve(child.getFileName().toString()));
+                });
+            }
+            return result;
+        } catch (URISyntaxException e) {
+            throw new IOException("Invalid URL: " + url, e);
+        }
+    }
+    
+    private List<Path> listJarDirectory(Path dir, String resourcePath, URL url) throws IOException {
+        // 确保路径以 / 结尾，用于匹配目录下的条目
+        String dirPath = resourcePath.endsWith("/") ? resourcePath : resourcePath + "/";
+        
+        JarURLConnection jarConn = (JarURLConnection) url.openConnection();
+        String jarEntryName = jarConn.getEntryName(); // 可能是 null 如果是根目录
+        
+        // 获取 JAR 文件 URL
+        URL jarFileUrl = jarConn.getJarFileURL();
+        
+        Set<String> entries = new HashSet<>();
+        
+        try (JarFile jarFile = new JarFile(new File(jarFileUrl.toURI()))) {
+            Enumeration<JarEntry> jarEntries = jarFile.entries();
+            
+            while (jarEntries.hasMoreElements()) {
+                JarEntry entry = jarEntries.nextElement();
+                String entryName = entry.getName();
+                
+                // 检查是否是目标目录下的直接子条目
+                if (entryName.startsWith(dirPath) && !entryName.equals(dirPath)) {
+                    String relativePath = entryName.substring(dirPath.length());
+                    
+                    // 只取直接子目录或文件（不包含嵌套）
+                    int slashIndex = relativePath.indexOf('/');
+                    if (slashIndex == -1 || slashIndex == relativePath.length() - 1) {
+                        // 去掉末尾的 /
+                        if (relativePath.endsWith("/")) {
+                            relativePath = relativePath.substring(0, relativePath.length() - 1);
+                        }
+                        if (!relativePath.isEmpty()) {
+                            entries.add(relativePath);
+                        }
+                    }
+                }
+            }
+        } catch (URISyntaxException e) {
+            throw new IOException("Invalid JAR URL: " + jarFileUrl, e);
+        }
+        
+        // 转换为 Path 列表
+        List<Path> result = new ArrayList<>();
+        for (String entry : entries) {
+            result.add(dir.resolve(entry));
+        }
+        return result;
     }
     
     @Override
