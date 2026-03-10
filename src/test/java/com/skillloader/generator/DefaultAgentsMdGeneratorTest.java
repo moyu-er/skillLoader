@@ -96,6 +96,36 @@ class DefaultAgentsMdGeneratorTest {
     }
     
     @Test
+    void shouldUpdateExistingContentWithMultiline() {
+        DefaultAgentsMdGenerator generator = createGenerator();
+        // 包含多行的复杂内容
+        String existing = """
+            # Project Documentation
+            
+            <!-- SKILLS_TABLE_START -->
+            <skill>
+            <name>old</name>
+            <description>Old\nmultiline\ndescription</description>
+            </skill>
+            <!-- SKILLS_TABLE_END -->
+            
+            End content.
+            """;
+        
+        List<Skill> skills = List.of(
+            createSkill("new", "New skill", SkillSource.PROJECT, 10)
+        );
+        
+        String result = generator.updateExisting(existing, skills);
+        
+        assertThat(result).contains("# Project Documentation");
+        assertThat(result).contains("<name>new</name>");
+        assertThat(result).doesNotContain("<name>old</name>");
+        assertThat(result).contains("<!-- SKILLS_TABLE_START -->");
+        assertThat(result).contains("<!-- SKILLS_TABLE_END -->");
+    }
+    
+    @Test
     void shouldAppendWhenNoMarkers() {
         DefaultAgentsMdGenerator generator = createGenerator();
         String existing = "# Project Documentation\n\nSome content.";
