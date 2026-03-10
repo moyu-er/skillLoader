@@ -43,7 +43,7 @@ public final class SkillLoaderConfig {
     
     public static SkillLoaderConfig defaults() {
         return new SkillLoaderConfig(
-            List.of(new PathEntry("default", "./skills", 10, false, PathType.FILESYSTEM)),
+            List.of(new PathEntry("default", "skills", 10, false, PathType.CLASSPATH)),
             ParserConfig.defaults(),
             SecurityConfig.defaults(),
             GeneratorConfig.defaults()
