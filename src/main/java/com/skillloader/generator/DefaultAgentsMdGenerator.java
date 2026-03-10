@@ -23,9 +23,9 @@ public class DefaultAgentsMdGenerator implements AgentsMdGenerator {
         String newSection = generateSkillsSection(skills);
         
         if (existingContent.contains(MARKER_START) && existingContent.contains(MARKER_END)) {
-            // 替换现有部分
+            // 替换现有部分（使用 DOTALL 模式匹配多行内容）
             return existingContent.replaceAll(
-                MARKER_START + ".*?" + MARKER_END,
+                MARKER_START + "(?s).*?" + MARKER_END,
                 newSection
             );
         }
