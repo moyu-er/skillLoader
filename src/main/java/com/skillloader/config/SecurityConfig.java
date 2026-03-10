@@ -42,8 +42,8 @@ public final class SecurityConfig {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SecurityConfig that = (SecurityConfig) o;
-        return strictMode == that.strictMode &amp;&amp;
-               allowSymlinks == that.allowSymlinks &amp;&amp;
+        return strictMode == that.strictMode &&
+               allowSymlinks == that.allowSymlinks &&
                maxDepth == that.maxDepth;
     }
     

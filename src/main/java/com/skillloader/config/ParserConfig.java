@@ -42,8 +42,8 @@ public final class ParserConfig {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ParserConfig that = (ParserConfig) o;
-        return maxFileSize == that.maxFileSize &amp;&amp;
-               Objects.equals(markerFile, that.markerFile) &amp;&amp;
+        return maxFileSize == that.maxFileSize &&
+               Objects.equals(markerFile, that.markerFile) &&
                Objects.equals(encoding, that.encoding);
     }
     

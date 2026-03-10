@@ -52,10 +52,10 @@ public final class SkillMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SkillMetadata that = (SkillMetadata) o;
-        return Objects.equals(name, that.name) &amp;&amp;
-               Objects.equals(description, that.description) &amp;&amp;
-               Objects.equals(context, that.context) &amp;&amp;
-               Objects.equals(tags, that.tags) &amp;&amp;
+        return Objects.equals(name, that.name) &&
+               Objects.equals(description, that.description) &&
+               Objects.equals(context, that.context) &&
+               Objects.equals(tags, that.tags) &&
                Objects.equals(extra, that.extra);
     }
     

@@ -45,9 +45,9 @@ public final class SkillContent {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SkillContent that = (SkillContent) o;
-        return Objects.equals(metadata, that.metadata) &amp;&amp;
-               Objects.equals(markdownContent, that.markdownContent) &amp;&amp;
-               Objects.equals(baseDir, that.baseDir) &amp;&amp;
+        return Objects.equals(metadata, that.metadata) &&
+               Objects.equals(markdownContent, that.markdownContent) &&
+               Objects.equals(baseDir, that.baseDir) &&
                Objects.equals(resources, that.resources);
     }
     

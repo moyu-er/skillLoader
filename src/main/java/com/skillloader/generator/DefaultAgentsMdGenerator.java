@@ -22,7 +22,7 @@ public class DefaultAgentsMdGenerator implements AgentsMdGenerator {
     public String updateExisting(String existingContent, List<Skill> skills) {
         String newSection = generateSkillsSection(skills);
         
-        if (existingContent.contains(MARKER_START) &amp;&amp; existingContent.contains(MARKER_END)) {
+        if (existingContent.contains(MARKER_START) && existingContent.contains(MARKER_END)) {
             // 替换现有部分
             return existingContent.replaceAll(
                 MARKER_START + ".*?" + MARKER_END,
@@ -126,7 +126,7 @@ public class DefaultAgentsMdGenerator implements AgentsMdGenerator {
     private String escapeXml(String text) {
         if (text == null) return "";
         return text
-            .replace("&", "&amp;")
+            .replace("&", "&")
             .replace("<", "&lt;")
             .replace(">", "&gt;")
             .replace("\"", "&quot;")

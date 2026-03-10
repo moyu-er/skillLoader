@@ -58,10 +58,10 @@ public final class Skill implements Comparable<Skill> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Skill skill = (Skill) o;
-        return priority == skill.priority &amp;&amp;
-               Objects.equals(name, skill.name) &amp;&amp;
-               Objects.equals(description, skill.description) &amp;&amp;
-               source == skill.source &amp;&amp;
+        return priority == skill.priority &&
+               Objects.equals(name, skill.name) &&
+               Objects.equals(description, skill.description) &&
+               source == skill.source &&
                Objects.equals(location, skill.location);
     }
     
