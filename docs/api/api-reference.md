@@ -25,11 +25,14 @@ SkillLoader loader = SkillLoader.fromConfig(Path.of("skillloader.yml"));
 | 方法 | 返回类型 | 说明 |
 |------|----------|------|
 | `discover()` | `List<Skill>` | 发现所有可用的 skills |
-| `load(String skillName)` | `SkillContent` | 加载指定 skill 的完整内容 |
-| `getMetadata(String skillName)` | `Optional<SkillMetadata>` | 获取 skill 元数据 |
-| `generateAgentsMd()` | `String` | 生成 AGENTS.md 内容 |
-| `syncToFile(Path)` | `void` | 同步到文件（需启用 generator）|
+| `load(String skillName)` | `SkillContent` | 加载指定 skill 的完整内容（含 metadata + markdown + resources）|
+| `getMetadata(String skillName)` | `Optional<SkillMetadata>` | 仅获取 skill 元数据（轻量级，不解析完整内容）|
+| `generateAgentsMd()` | `String` | 生成 AGENTS.md 内容（字符串）|
+| `syncToFile(Path)` | `void` | 将 AGENTS.md 写入文件（需启用 generator）|
+| `updateFile(Path)` | `void` | 更新现有 AGENTS.md 文件（需启用 generator）|
+| `getAllowedPaths()` | `List<PathEntry>` | 获取允许访问的路径列表（调试用）|
 | `getConfig()` | `SkillLoaderConfig` | 获取当前配置 |
+| `registry()` | `SkillRegistry` | 获取注册表（高级用法）|
 
 ---
 
@@ -68,6 +71,7 @@ for (Skill skill : loader.discover()) {
 |------|------|------|
 | `metadata` | `SkillMetadata` | 元数据 |
 | `markdownContent` | `String` | Markdown 文档内容 |
+| `baseDir` | `Path` | skill 目录的根路径 |
 | `resources` | `List<ResourceRef>` | 资源文件列表 |
 
 ### 示例
@@ -83,10 +87,31 @@ System.out.println(meta.description());
 // 获取文档
 String doc = content.markdownContent();
 
-// 获取资源
+// 获取 skill 目录路径
+Path skillDir = content.baseDir();
+
+// 获取资源文件列表
 for (ResourceRef ref : content.resources()) {
     System.out.println(ref.name() + " (" + ref.type() + ")");
 }
+```
+
+### 读取资源文件内容
+
+SkillLoader 返回资源引用，**不包含文件内容读取**。外部服务需要自己读取：
+
+```java
+SkillContent content = loader.load("git-workflow");
+
+// 找到特定资源
+ResourceRef resource = content.resources().stream()
+    .filter(r -> r.name().equals("script.sh"))
+    .findFirst()
+    .orElseThrow();
+
+// 读取内容（外部服务实现）
+Path resourcePath = Paths.get(resource.uri());
+String content = Files.readString(resourcePath);
 ```
 
 ---
