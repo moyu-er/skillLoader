@@ -6,6 +6,7 @@ import com.skillloader.config.PathType;
 import com.skillloader.config.SecurityConfig;
 import com.skillloader.model.Skill;
 import com.skillloader.model.SkillSource;
+import com.skillloader.parser.SimpleYamlParser;
 import com.skillloader.reader.ClasspathReader;
 import com.skillloader.reader.FileSystemReader;
 import com.skillloader.reader.SecureFileReader;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -108,7 +110,7 @@ public class SkillScanner {
             if (reader.isDirectory(item)) {
                 // 检查是否是 skill 目录
                 if (isSkillDirectory(item, reader)) {
-                    Skill skill = createSkill(item, entry);
+                    Skill skill = createSkill(item, entry, reader);
                     skills.add(skill);
                 } else {
                     // 递归扫描子目录
@@ -139,16 +141,38 @@ public class SkillScanner {
     }
     
     /**
-     * 创建 Skill 对象。
+     * 创建 Skill 对象，从 SKILL.md 解析 name 和 description。
      */
-    private Skill createSkill(Path skillDir, PathEntry entry) {
+    private Skill createSkill(Path skillDir, PathEntry entry, SecureFileReader reader) {
         String name = skillDir.getFileName().toString();
+        String description = "";
+        
+        // 读取 SKILL.md 解析 frontmatter
+        try {
+            Path skillMdPath = skillDir.resolve(markerFile);
+            String content = reader.read(skillMdPath);
+            
+            // 解析 YAML frontmatter
+            Map<String, Object> frontmatter = SimpleYamlParser.parseFrontmatter(content);
+            
+            // 获取 name（优先使用 frontmatter 中的，否则用目录名）
+            if (frontmatter.containsKey("name")) {
+                name = String.valueOf(frontmatter.get("name"));
+            }
+            
+            // 获取 description
+            if (frontmatter.containsKey("description")) {
+                description = String.valueOf(frontmatter.get("description"));
+            }
+        } catch (Exception e) {
+            // 解析失败时使用默认值（目录名作为 name，空字符串作为 description）
+        }
+        
         SkillSource source = entry.type() == PathType.CLASSPATH 
             ? SkillSource.CLASSPATH 
             : (isGlobalPath(entry) ? SkillSource.GLOBAL : SkillSource.PROJECT);
         
-        // 描述暂时为空，后续从 SKILL.md 解析
-        return new Skill(name, "", source, skillDir, entry.priority());
+        return new Skill(name, description, source, skillDir, entry.priority());
     }
     
     /**
